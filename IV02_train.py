@@ -9,7 +9,7 @@ from keras import Model
 from keras import regularizers
 from keras import initializers
 from keras import optimizers
-from keras.layers import Dense, Conv1D, Dropout, concatenate,Flatten
+from keras.layers import Dense, Conv1D, Dropout, concatenate, Flatten, LSTM
 from keras.utils import np_utils
 from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import MaxPooling1D
@@ -28,8 +28,8 @@ def main():
     random.shuffle(index)
 
     Label_Onehot = np_utils.to_categorical(Label, num_classes=5)[index]
-    I_Dataset = np.array(I_Dataset, dtype='float32') / (13*37.78)
-    V_Dataset = np.array(V_Dataset, dtype='float32') / 9.12
+    I_Dataset = np.array(I_Dataset, dtype='float32') / 9.12
+    V_Dataset = np.array(V_Dataset, dtype='float32') / (13*37.78)
     I_Dataset = np.expand_dims(I_Dataset, axis=2)
     V_Dataset = np.expand_dims(V_Dataset, axis=2)
     I_Dataset = I_Dataset[index]
@@ -42,12 +42,17 @@ def main():
 
     IV_train = concatenate([V_train, I_train])
 
-    Conv_Model = Conv1D(filters=128, kernel_size=8, activation='relu',
+    Conv_Model = Conv1D(filters=64, kernel_size=10, activation='relu',
                  kernel_initializer=initializers.he_normal())(IV_train)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
-    Conv_Model = Conv1D(filters=256, kernel_size=6, activation='relu',
+    Conv_Model = Conv1D(filters=128, kernel_size=8, activation='relu',
+                        kernel_initializer=initializers.he_normal())(Conv_Model)
+
+    Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
+
+    Conv_Model = Conv1D(filters=256, kernel_size=8, activation='relu',
                         kernel_initializer=initializers.he_normal())(Conv_Model)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
@@ -58,8 +63,10 @@ def main():
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
     Conv_Model = BatchNormalization()(Conv_Model)
-    Conv_Model = Dropout(0.2)(Conv_Model)
+    Conv_Model = Dropout(0.5)(Conv_Model)
+
     Conv_Model = Flatten()(Conv_Model)
+
 
     Fc_Model = concatenate([Conv_Model, Ir_T_train], axis=1)
 
@@ -73,7 +80,7 @@ def main():
                   metrics=['accuracy'])
 
     model.fit({'V_train': V_Dataset, 'I_train': I_Dataset, 'Ir_T_train': Ir_T_Data}, {'Fc_Out': Label_Onehot}, epochs=200,
-              batch_size=64, validation_split=0.2)
+              batch_size=32, validation_split=0.2)
 
     model.save('model1.h5')
 

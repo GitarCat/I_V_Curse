@@ -16,7 +16,7 @@ from keras.layers.convolutional import MaxPooling1D
 
 import scipy.io as sio
 
-
+np.random.seed(7)
 #normalization
 def NormalizationV(x):
     x = np.array(x, dtype='float32')
@@ -34,10 +34,7 @@ def NormalizationI(x):
 
 
 def main():
-    I_Dataset = pd.read_csv('./dataset/I_data.csv').values
-    V_Dataset = pd.read_csv('./dataset/V_Data.csv').values
-    Ir_T_Data = pd.read_csv('./dataset/Ir_T.csv').values
-    Label = pd.read_csv('./dataset/label.csv').transpose()
+    print(np.random.random(100))
 
 
 if __name__ == '__main__':
