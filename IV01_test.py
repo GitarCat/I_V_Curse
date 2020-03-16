@@ -16,22 +16,6 @@ from keras.layers.convolutional import MaxPooling1D
 
 import scipy.io as sio
 
-np.random.seed(7)
-#normalization
-def NormalizationV(x):
-    x = np.array(x, dtype='float32')
-    for i in range(0, x.shape[0]):
-        for j in range(x.shape[1]):
-            x[i,j]=x[i,j]/(13*37.78)
-    return x
-
-def NormalizationI(x):
-    x=np.array(x,dtype='float32')
-    for i in range(0, x.shape[0]):
-        for j in range(x.shape[1]):
-            x[i, j] = x[i, j] / 9.12
-    return x
-
 
 def main():
     print(np.random.random(100))
