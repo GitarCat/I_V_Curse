@@ -9,10 +9,11 @@ from keras import Model
 from keras import regularizers
 from keras import initializers
 from keras import optimizers
-from keras.layers import Dense, Conv1D, Dropout, concatenate, Flatten, LSTM
+from keras.layers import Dense, Conv1D, Dropout, concatenate, Flatten, LSTM, Lambda
 from keras.utils import np_utils
 from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import MaxPooling1D
+
 
 import scipy.io as sio
 np.random.seed(5)
@@ -45,8 +46,13 @@ def main():
 
     IV_train = concatenate([V_train, I_train])
 
-    Conv_Model = Conv1D(filters=64, kernel_size=10, activation='relu',
+    Conv_Model = Conv1D(filters=32, kernel_size=10, activation='relu',
                  kernel_initializer=initializers.he_normal())(IV_train)
+
+    Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
+
+    Conv_Model = Conv1D(filters=64, kernel_size=8, activation='relu',
+                        kernel_initializer=initializers.he_normal())(Conv_Model)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
@@ -55,25 +61,26 @@ def main():
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
-    Conv_Model = Conv1D(filters=256, kernel_size=8, activation='relu',
+    Conv_Model = Conv1D(filters=256, kernel_size=6, activation='relu',
                         kernel_initializer=initializers.he_normal())(Conv_Model)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
-    Conv_Model = Conv1D(filters=512, kernel_size=4, activation='relu',
+    Conv_Model = Conv1D(filters=512, kernel_size=6, activation='relu',
                         kernel_initializer=initializers.he_normal())(Conv_Model)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
-    Conv_Model = BatchNormalization()(Conv_Model)
+
+    Conv_Model = BatchNormalization(epsilon=1e-06, momentum=0.9)(Conv_Model)
     Conv_Model = Dropout(0.65)(Conv_Model)
+
 
     Conv_Model = Flatten()(Conv_Model)
 
+    Conv_Model = concatenate([Conv_Model, Ir_T_train], axis=1)
 
-    Fc_Model = concatenate([Conv_Model, Ir_T_train], axis=1)
-
-    Fc_Model = Dense(128, activation='relu')(Fc_Model)
+    Fc_Model = Dense(128, activation='relu')(Conv_Model)
     Fc_Model = Dense(64, activation='relu')(Fc_Model)
     Fc_Out = Dense(5, kernel_regularizer=regularizers.l2(0.0015), activation='softmax', name='Fc_Out')(Fc_Model)
 
@@ -88,10 +95,6 @@ def main():
               validation_split=0.2)
 
     model.save('model1.h5')
-
-
-
-
 
 if __name__ == '__main__':
     main()
