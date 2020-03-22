@@ -14,17 +14,16 @@ from keras.utils import np_utils
 from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import MaxPooling1D
 
-
-import scipy.io as sio
 np.random.seed(5)
 
 def main():
     I_Dataset = pd.read_csv('./dataset/I_data.csv').values
     V_Dataset = pd.read_csv('./dataset/V_Data.csv').values
     Ir_T_Data = pd.read_csv('./dataset/Ir_T.csv').values
+    Ir_T_Data[:, 0] = Ir_T_Data[:, 0] / 775.75
+    Ir_T_Data[:, 1] = Ir_T_Data[:, 1] / 52.734
     Label = pd.read_csv('./dataset/label.csv').transpose()
     index = np.arange(0, Label.shape[1])
-    Data_frac = int(Label.shape[1]*0.8)
     Label = Label.values[0].reshape(-1) - 1
 
     random.shuffle(index)
@@ -46,12 +45,12 @@ def main():
 
     IV_train = concatenate([V_train, I_train])
 
-    Conv_Model = Conv1D(filters=32, kernel_size=10, activation='relu',
+    Conv_Model = Conv1D(filters=32, kernel_size=2, activation='relu',
                  kernel_initializer=initializers.he_normal())(IV_train)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
 
-    Conv_Model = Conv1D(filters=64, kernel_size=8, activation='relu',
+    Conv_Model = Conv1D(filters=64, kernel_size=4, activation='relu',
                         kernel_initializer=initializers.he_normal())(Conv_Model)
 
     Conv_Model = MaxPooling1D(pool_size=2, strides=2)(Conv_Model)
@@ -73,7 +72,7 @@ def main():
 
 
     Conv_Model = BatchNormalization(epsilon=1e-06, momentum=0.9)(Conv_Model)
-    Conv_Model = Dropout(0.65)(Conv_Model)
+    Conv_Model = Dropout(0.5)(Conv_Model)
 
 
     Conv_Model = Flatten()(Conv_Model)

@@ -18,7 +18,11 @@ import scipy.io as sio
 
 
 def main():
-    print(np.random.random(100))
+    I_Dataset = pd.read_csv('./dataset/I_data.csv').transpose()
+    V_Dataset = pd.read_csv('./dataset/V_Data.csv')
+    Ir_T_Data = pd.read_csv('./dataset/Ir_T.csv')
+    print(I_Dataset.describe())
+    print(Ir_T_Data.describe())
 
 
 if __name__ == '__main__':
